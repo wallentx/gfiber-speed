@@ -71,9 +71,14 @@ test: ## Run the test suite
 	$(call PRINT_STEP,go test)
 	@$(GO) test -timeout "$(TIMEOUT)" ./...
 
-race: ## Run the test suite with the race detector
-	$(call PRINT_STEP,go test -race)
-	@$(GO) test -race -timeout "$(TIMEOUT)" ./...
+race: ## Run the test suite with the race detector (skipped on Android)
+	$(call PRINT_STEP,race tests)
+	@target_os=$$($(GO) env GOOS) || exit $$?; \
+		if [ "$$target_os" = android ]; then \
+			printf 'Skipping race tests on Android\n' >&2; \
+		else \
+			$(GO) test -race -timeout "$(TIMEOUT)" ./...; \
+		fi
 
 .PHONY: build install run servers clean
 build: ## Build the local executable
